@@ -5,10 +5,9 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -38,9 +37,9 @@ public class Main extends Application implements writeOnInterface {
         root.setPrefSize(600, 350);
 
         //Set up bar to enter new chat and new username
-        recievePort.setPromptText("Receive Port");
+        recievePort.setPromptText("Your Port");
         userField.setPromptText("Username");
-        targetPort.setPromptText("Target Port");
+        targetPort.setPromptText("Peer Port");
         uName.setText("Username: ");
         uName.setPrefWidth(75);
 
@@ -63,6 +62,17 @@ public class Main extends Application implements writeOnInterface {
 
         sendMsgField.setEditable(true);
         sendMsgField.setPrefWidth(425);
+
+        sendMsgField.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if(event.getCode() == KeyCode.ENTER) {
+                    sendkeyAction(event);
+                    messagesArea.appendText(userField.getText() + ": " + sendMsgField.getText() + "\n");
+                    sendMsgField.clear();
+                }
+            }
+        });
 
         sendButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
             @Override
@@ -105,6 +115,19 @@ public class Main extends Application implements writeOnInterface {
 
     //Same as the connectButtonAction method but with the send button
     private void sendButtonAction(ActionEvent e) {
+        String user = uName.getText();
+        String msg = sendMsgField.getText();
+        //Set ip default to localhost
+        String ip = "localhost";
+        int port = Integer.parseInt(targetPort.getText());
+
+        Client transmit = new Client(user, msg, ip, port);
+
+        //Start Thread
+        transmit.start();
+    }
+
+    private void sendkeyAction(KeyEvent e) {
         String user = uName.getText();
         String msg = sendMsgField.getText();
         //Set ip default to localhost
