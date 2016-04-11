@@ -16,6 +16,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import sun.security.util.Password;
 
+import javax.print.DocFlavor;
 import java.io.*;
 
 
@@ -26,6 +27,7 @@ Created by Wesley Lawrence
 2................Enter Button
 3................Register Button
 4................Add User Button
+5................Search for a user
 
  */
 
@@ -287,6 +289,65 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+    /*5................Search for a user
+    Searches the file by user name and searches for a user
+     */
+    public static String Search(String name) throws IOException
+    {
+        String fileName = "User.txt";
+        File file = new File(fileName);
+        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        String[] userCheck = null;
+        String line;
+        String userInfo= " ";
+
+        if (!file.exists())
+        {
+            System.out.println("Error! file doesn't exist");
+        }
+        else
+        {
+            while((line = br.readLine()) != null) {
+                userCheck = line.split(",");
+                if(name.equals(userCheck[0]))
+                {
+                    userInfo = name + " " + userCheck[2];
+                }
+            }
+        }
+        return (userInfo);
+    }
+
+/*5................Search for a user
+    Searches the file by port number and searches for a user
+ */
+
+    public static String Search(int port) throws IOException
+    {
+        String fileName = "User.txt";
+        File file = new File(fileName);
+        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        String[] userCheck = null;
+        String line;
+        String userInfo= " ";
+        String portValue = Integer.toString(port);
+
+        if (!file.exists())
+        {
+            System.out.println("Error! file doesn't exist");
+        }
+        else
+        {
+            while((line = br.readLine()) != null) {
+                userCheck = line.split(",");
+                if(portValue.equals(userCheck[2]))
+                {
+                    userInfo = userCheck[0] + " " + portValue;
+                }
+            }
+        }
+        return (userInfo);
+    }
 
     public static void main(String[] args) {
         launch(args);
