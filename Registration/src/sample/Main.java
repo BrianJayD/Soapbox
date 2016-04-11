@@ -30,6 +30,11 @@ Created by Wesley Lawrence
  */
 
 public class Main extends Application {
+    //global variables to keep track of the current username, and their port id
+    private String Username;
+    private int portID = 1010;
+    private int count = 0;
+
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -102,6 +107,7 @@ public class Main extends Application {
                             /*Reads the file line by line and sees if the username and password the user enters match with
                             data from the file*/
                             else {
+                                    count = 0;
                                 while ((line = br.readLine()) != null) {
                                     nameCheck = line.split(",");
                                     if (name.equals(nameCheck[0]) && pword.equals(nameCheck[1])) {
@@ -109,12 +115,19 @@ public class Main extends Application {
                                     } else {
                                         info = false;
                                     }
+                                    count++;
                                 }
+
                             }
 
                             if (info == true)
                             {
+
                                 System.out.println("Login successful");
+                                //gives each username a unique port id
+                                Username = userName.getText();
+                                System.out.println("Username: " + Username + " Port ID: " + (portID + ((count-1)*10)));
+
                                 ((Node)(event.getSource())).getScene().getWindow().hide();
                             }
 
@@ -193,13 +206,15 @@ public class Main extends Application {
                             if(!file.exists()) {
 
                                 outWrite = new PrintWriter(new FileOutputStream(new File(fileName), true));
-                                outWrite.println(userName.getText() + "," + password.getText());
+                                outWrite.println(userName.getText() + "," + password.getText() + "," + portID);
                                 outWrite.close();
 
 
                             }
                             else{
                                 //If the file already exits, this concats the newest username and password to the file
+
+
                                 FileWriter fw = new FileWriter(fileName, true);
                                 BufferedWriter bw = new BufferedWriter(fw);
                                 PrintWriter pw = new PrintWriter(bw);
@@ -209,15 +224,18 @@ public class Main extends Application {
                                 String name = userName.getText().toLowerCase();
 
                                 boolean duplicate = false;
-
+                                count = 0;
                                 //checks to see if their are duplicate usernames in the file
                                 while ((line = br.readLine()) != null)
                                 {
+
                                         nameCheck = line.split(",");
                                     if (name.equals(nameCheck[0].toLowerCase()))
                                     {
                                         duplicate = true;
+
                                     }
+                                    count++;
                                 }
 
                                 //displays an error if their are duplicate names in the file
@@ -227,7 +245,8 @@ public class Main extends Application {
 
                                 }
                                 else {
-                                    pw.println(userName.getText() + "," + password.getText());
+
+                                    pw.println(userName.getText() + "," + password.getText() + "," + (portID + (count*10)));
                                     System.out.println("Registration complete");
                                     ((Node)(event.getSource())).getScene().getWindow().hide();
 
