@@ -7,6 +7,6 @@ How to run:
 
 
 This project was created by Wesley Lawrence, Brian Domingo, and Omar Khan. 
-Most of the work was done on Brian's computer. When we got together, we thought
-it would be easier to work on one main computerto help us keep our ideas
-focused and keep us on the same page. 
+Most of the work was done on Brian's computer. WE were trying out peer programming
+to make one main program instead of making three different programs and trying to 
+integrate them all together.
