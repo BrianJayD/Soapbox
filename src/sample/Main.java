@@ -1,6 +1,7 @@
 package sample;
 
 import com.sun.org.apache.xerces.internal.impl.xs.SchemaNamespaceSupport;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -35,6 +36,9 @@ public class Main extends Application implements writeOnInterface {
     private int peersPort = 0;
 
     //set global variables for the log in screen
+    private BorderPane logPane = new BorderPane();
+    private BorderPane titlePane = new BorderPane();
+    private GridPane logGrid = new GridPane();
     private TextField userInput = new TextField();
     private PasswordField passInput = new PasswordField();
     private Label titleLabel = new Label();
@@ -58,6 +62,7 @@ public class Main extends Application implements writeOnInterface {
     private MenuItem chatConnect = new MenuItem("New Chat");
     private MenuItem signOut = new MenuItem("Sign Out");
     private MenuItem exitProgram = new MenuItem("Exit");
+    private MenuItem helpItem = new MenuItem("FAQ");
 
     // set global variables for Register User
     private Button addUser = new Button("Register");
@@ -71,33 +76,31 @@ public class Main extends Application implements writeOnInterface {
     private Label searchPort = new Label();
     private TextField uSearchField = new TextField();
     private TextField pSearchField = new TextField();
-    private Button connectButton = new Button("Connect");
+    private Button connectUserButton = new Button("Connect by User");
+    private Button connectPortButton = new Button("Connect by Port");
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         //BorderPane for log in window
-        BorderPane logPane = new BorderPane();
-        GridPane logGrid = new GridPane();
         logGrid.setPadding(new Insets(10, 10, 10, 10));
         logGrid.setPrefSize(400, 400);
-
-        //BorderPane for chat window
-        BorderPane chatWindow = new BorderPane();
-        BorderPane root = new BorderPane();
-        root.setPadding(new Insets(25, 25, 25, 25));
-        root.setPrefSize(600, 350);
 
         //Set up menu
         menuBar.getMenus().addAll(sbMenu, helpMenu);
         sbMenu.getItems().addAll(chatConnect, signOut, new SeparatorMenuItem(), exitProgram);
+        helpMenu.getItems().addAll(helpItem);
+
+        titlePane.setPadding(new Insets(25, 0, 0, 0));
 
         //Set up for log in window
         titleLabel.setText("Soapbox");
         titleLabel.setFont(Font.font(35));
         userLabel.setText("Username: ");
         passLabel.setText("Password: ");
+
         userInput.setPromptText("Enter username");
         passInput.setPromptText("Enter password");
+
         logGrid.setHgap(10);
         logGrid.setVgap(10);
         logGrid.setAlignment(Pos.CENTER);
@@ -108,7 +111,9 @@ public class Main extends Application implements writeOnInterface {
         logGrid.add(signInButton, 0, 2);
         logGrid.add(regButton, 1, 2);
         logGrid.add(errLabel, 0, 3);
-        logPane.setTop(titleLabel);
+
+        titlePane.setCenter(titleLabel);
+        logPane.setTop(titlePane);
         logPane.setCenter(logGrid);
 
 
@@ -126,11 +131,6 @@ public class Main extends Application implements writeOnInterface {
 
         HBox msgSendArea = new HBox(10, uName, sendMsgField, sendButton);
 
-        root.setCenter(messagesArea);
-        root.setBottom(msgSendArea);
-        chatWindow.setTop(menuBar);
-
-        chatWindow.setCenter(root);
 
         // Show log screen
         Scene logScene = new Scene(logPane);
@@ -181,13 +181,25 @@ public class Main extends Application implements writeOnInterface {
                         //Hides current window and displays chat window
                         primaryStage.hide();
 
+                        //BorderPane for chat window
+                        BorderPane chatWindow = new BorderPane();
+                        BorderPane root = new BorderPane();
+                        root.setPadding(new Insets(25, 25, 25, 25));
+                        root.setPrefSize(625, 350);
+
+                        root.setCenter(messagesArea);
+                        root.setBottom(msgSendArea);
+                        chatWindow.setTop(menuBar);
+                        chatWindow.setCenter(root);
+
                         Scene chatScene = new Scene(chatWindow);
                         chatStage.setScene(chatScene);
+                        chatStage.setTitle("Soapbox");
                         chatStage.show();
 
-                        messagesArea.appendText("Username: " + usr + "\nPort ID: " + (portID + ((count-1)*10))
-                                + "\nClick on 'New Chat' in the Soapbox menu to start chatting.");
-                        usersPort = (portID + ((count-1)*10));
+                        messagesArea.appendText("Username: " + usr + "\nPort ID: " + (portID + ((count)*10))
+                                + "\nClick on 'New Chat' in the Soapbox menu to start chatting.\n\n");
+                        usersPort = (portID + ((count)*10));
                         uName.setText(userInput.getText());
                     }
                     else {
@@ -299,15 +311,39 @@ public class Main extends Application implements writeOnInterface {
                 connectGrid.add(connectTitle, 0, 0);
                 connectGrid.add(searchUser, 0, 1);
                 connectGrid.add(uSearchField, 1, 1);
-                connectGrid.add(searchPort, 0, 2);
-                connectGrid.add(pSearchField, 1, 2);
-                connectGrid.add(connectButton, 0, 3);
+                connectGrid.add(connectUserButton, 0, 2);
+                connectGrid.add(searchPort, 0, 3);
+                connectGrid.add(pSearchField, 1, 3);
+                connectGrid.add(connectPortButton, 0, 4);
 
                 Scene connectScene = new Scene(connectGrid);
                 newConnect.setScene(connectScene);
                 newConnect.show();
 
-                connectButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
+                connectUserButton.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        messagesArea.clear();
+
+                        if (!uSearchField.getText().isEmpty()) {
+                            peersPort = searchName(uSearchField.getText());
+
+                            connectButtonAction(event, peersPort);
+                            messagesArea.appendText("Your port: " + usersPort + "\nSUCCESS: Connected to port: "
+                                    + peersPort + "\n\n");
+
+                            //gets information for searched user
+                            Search(peersPort);
+                        } else {
+                            messagesArea.appendText("Your port: " + usersPort);
+                            messagesArea.appendText("Unable to connect");
+                        }
+
+                        newConnect.hide();
+                    }
+                });
+
+                connectPortButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent event) {
                         messagesArea.clear();
@@ -318,6 +354,9 @@ public class Main extends Application implements writeOnInterface {
                             connectButtonAction(event, peersPort);
                             messagesArea.appendText("Your port: " + usersPort + "\nSUCCESS: Connected to port: "
                                     + peersPort + "\n\n");
+
+                            //gets information for searched user
+                            Search(peersPort);
 
                         } else {
                             messagesArea.appendText("Your port: " + usersPort);
@@ -336,7 +375,7 @@ public class Main extends Application implements writeOnInterface {
                 //reset chat window
                 messagesArea.clear();
                 sendMsgField.clear();
-                chatStage.hide();
+                chatStage.close();
 
                 //Re-open log in window
                 userInput.clear();
@@ -369,6 +408,17 @@ public class Main extends Application implements writeOnInterface {
                 sendButtonAction(event);
                 messagesArea.appendText(uName.getText() + ": " + sendMsgField.getText() + "\n");
                 sendMsgField.clear();
+            }
+        });
+
+        helpItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                messagesArea.appendText("\n\nSOAPBOX\nTo chat with a peer, click on the Soapbox drop down menu and"
+                        + " click on the 'New Chat' option.\nYou can either connect by username by entering" +
+                        " in the username and hitting the 'Search by User' button.\nYou can also connect by " +
+                        "port number if you know a users port ID.\n\nCreators:\nBrian Domingo\nWesley Lawrence" +
+                        "\nOmar Khan\n\n");
             }
         });
     }
@@ -413,6 +463,64 @@ public class Main extends Application implements writeOnInterface {
 
         //Start Thread
         transmit.start();
+    }
+
+    public void Search(int port) {
+        try {
+            String fileName = "User.txt";
+            File file = new File(fileName);
+            BufferedReader br = new BufferedReader(new FileReader(fileName));
+            String[] userCheck = null;
+            String line;
+            String userInfo= " ";
+            String portValue = Integer.toString(port);
+
+            if (!file.exists())
+            {
+                System.out.println("Error! file doesn't exist");
+            }
+            else
+            {
+                while((line = br.readLine()) != null) {
+                    userCheck = line.split(",");
+                    if(portValue.equals(userCheck[2]))
+                    {
+                        userInfo = "SEARCHED FOR...\nUser: " + userCheck[0] + "\nPort: " + portValue + "\n";
+                    }
+                }
+            }
+            messagesArea.appendText(userInfo);
+        } catch (IOException e){
+            messagesArea.appendText("Could not find user.");
+        }
+    }
+
+    public int searchName(String name) {
+        try {
+            String fileName = "User.txt";
+            File file = new File(fileName);
+            BufferedReader br = new BufferedReader(new FileReader(fileName));
+            String[] userCheck = null;
+            String line;
+            String userInfo= " ";
+
+            if (!file.exists()) {
+                System.out.println("Error! file doesn't exist");
+            }
+            else {
+                while((line = br.readLine()) != null) {
+                    userCheck = line.split(",");
+                    if(name.equals(userCheck[0])) {
+                        String uPortCheck = userCheck[2];
+                        int uPortCheckInt = Integer.parseInt(uPortCheck);
+                        return uPortCheckInt;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            messagesArea.appendText("Could not find user.");
+        }
+        return 0;
     }
 
     public static void main(String[] args) {
