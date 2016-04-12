@@ -26,7 +26,7 @@ public class Client extends Thread {
             socket.getOutputStream().write(wholeMsg.getBytes());
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("No connection found. Try to reconnect.");
         }
     }
 
